@@ -10,7 +10,7 @@
 #include <string.h>
 #include <errno.h>
 #include <netinet/in.h>
-
+#include <map>
 
 #define MAX_EVENTS 1024
 
@@ -24,6 +24,9 @@
 #define RE_PORT 80
 
 char host_name[1024] = {0};
+
+std::map<int,int>rem_fds;//remote
+std::map<int,int>cli_fds;// client
 
 void write_msg(int fd,char*msg)
 {
@@ -67,17 +70,15 @@ void parse_msg(char*msg)
 int  create_connect()
 {
     struct sockaddr_in sock;
-    int lisfd;
-    int clifd;
-
+    int fd;
     struct hostent *addr = gethostbyname(host_name);
     if(!addr)
     {
         LOGINFO("-----%s-------addr successful",host_name);
         return -1;
     }
-    lisfd = socket(AF_INET,SOCK_STREAM,0);
-    if(lisfd < 0)
+    fd = socket(AF_INET,SOCK_STREAM,0);
+    if(fd < 0)
     {
         LOGINFO("------------------socket create failed");
         return -1;
@@ -88,14 +89,14 @@ int  create_connect()
     memcpy(&sock.sin_addr.s_addr,addr->h_addr_list[0],addr->h_length);
     sock.sin_port = htons(RE_PORT);
 
-    clifd = connect(lisfd,(struct sockaddr *)&sock,sizeof sock);
-    if (clifd < 0)
+    connect(fd,(struct sockaddr *)&sock,sizeof sock);
+    if (fd < 0)
     {
         char ip[32] = {0};
         LOGINFO("-------------------------------------connet failed %s",inet_ntop(addr->h_addrtype,addr->h_addr_list[0],ip,sizeof ip));
         return -1;
     }
-    return lisfd;
+    return fd;
 }
 
 int epoll_ctrl(int epfd,int type,int fd)
@@ -119,7 +120,6 @@ int epoll_accept(int epfd,int fd)
     int cli = accept(fd,(struct sockaddr*)&cliaddr,(socklen_t*)&len);
     if(cli == -1)
     {
-
         LOGINFO("accept failed %s",strerror(errno));
         return cli;
     }
@@ -128,27 +128,46 @@ int epoll_accept(int epfd,int fd)
     return 0;
 }
 
-void do_process_client(char *msg)
+void process_msg(int remfd,char*msg)
 {
-    parse_host(msg);
-    int fd = create_connect();
-    if(fd < 0)
-    {
-        LOGINFO("create_connect failed");
-        return;
-    }
-    parse_msg(msg);
-
     LOGINFO("==============================  Send Message ==============================");
     printf("%s",msg);
 
-    send(fd,msg,strlen(msg),0);
+    send(remfd,msg,strlen(msg),0);
 
     char buf[4096] = {0};
-    recv(fd,buf,sizeof(buf),0);
+    recv(remfd,buf,sizeof(buf),0);
 
     LOGINFO("==============================  Recv Message ==============================");
     printf("%s",buf);
+
+    int clifd = rem_fds[remfd];
+    LOGINFO("==============================  Send Message ==============================");
+    printf("%s",buf);
+    send(clifd,buf,strlen(buf),0);
+
+    memset(buf,0,sizeof buf);
+    recv(remfd,buf,sizeof(buf),0);
+    LOGINFO("==============================  Recv Message ==============================");
+    printf("%s",buf);
+
+}
+
+void do_process_client(int clifd,char *msg)
+{
+    parse_host(msg);
+    parse_msg(msg);
+    int remote_fd = create_connect();
+    if(remote_fd < 0)
+    {
+        LOGINFO("create_connect failed");
+        exit(1);
+    }
+
+    cli_fds[clifd] = remote_fd;
+    rem_fds[remote_fd] = clifd;
+
+    process_msg(remote_fd,msg);
 }
 
 
@@ -168,7 +187,7 @@ void epoll_read(int epfd,int fd)
     else
     {
         /*LOGINFO("%s",buf);*/
-        do_process_client(buf);
+        do_process_client(fd,buf);
     }
 }
 
