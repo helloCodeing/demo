@@ -106,7 +106,7 @@ int epoll_ctrl(int epfd,int type,int fd)
     int ret = epoll_ctl(epfd,type,fd,&ev);
     if (ret < 0)
     {
-        LOGINFO("epoll ctrl failed type : %d",type);
+        LOGINFO("epoll ctrl failed type : %s",strerror(errno));
         exit(1);
     }
     return 0;
@@ -128,7 +128,7 @@ int epoll_accept(int epfd,int fd)
     return 0;
 }
 
-void do_process_client(char *msg)
+void do_process_client(int clifd,char *msg)
 {
     parse_host(msg);
     int fd = create_connect();
@@ -146,8 +146,20 @@ void do_process_client(char *msg)
 
     char buf[4096] = {0};
     recv(fd,buf,sizeof(buf),0);
-
     LOGINFO("==============================  Recv Message ==============================");
+    printf("%s",buf);
+
+    send(clifd,buf,strlen(buf),0);
+    LOGINFO("==============================  Send Message ==============================");
+    printf("%s",buf);
+
+    memset(buf,0,sizeof buf);
+    recv(clifd,buf,sizeof(buf),0);
+    LOGINFO("==============================  Recv Message ==============================");
+    printf("%s",buf);
+
+    send(fd,buf,strlen(buf),0);
+    LOGINFO("==============================  Send Message ==============================");
     printf("%s",buf);
 }
 
@@ -168,7 +180,8 @@ void epoll_read(int epfd,int fd)
     else
     {
         /*LOGINFO("%s",buf);*/
-        do_process_client(buf);
+        do_process_client(fd,buf);
+        epoll_ctrl(epfd,EPOLL_CTL_ADD,fd);
     }
 }
 
