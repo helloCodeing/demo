@@ -13,6 +13,7 @@
 #include <libswscale/swscale.h>
 #include <libswresample/swresample.h>
 
+#define STREAM_DURATION   10.0
 
 typedef struct FileContext{
     AVFormatContext *formatContext; 
@@ -260,11 +261,98 @@ void open_audio(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, AVDictio
         exit(1);
     }
 }
-int OpenOutputFile(FileContext *out,const char*fileName)
+AVFrame *get_audio_frame(OutputStream *ost)
+{
+    AVFrame *frame = ost->tmp_frame;
+    int j, i, v;
+    int16_t *q = (int16_t*)frame->data[0];
+
+    /* check if we want to generate more frames */
+    if (av_compare_ts(ost->next_pts, ost->enc->time_base,
+                      STREAM_DURATION, (AVRational){ 1, 1 }) >= 0)
+        return NULL;
+
+    for (j = 0; j <frame->nb_samples; j++) {
+        v = (int)(sin(ost->t) * 10000);
+        for (i = 0; i < ost->enc->channels; i++)
+            *q++ = v;
+        ost->t     += ost->tincr;
+        ost->tincr += ost->tincr2;
+    }
+
+    frame->pts = ost->next_pts;
+    ost->next_pts  += frame->nb_samples;
+
+    return frame;
+}
+
+int write_audio_frame(AVFormatContext *oc, OutputStream *ost)
+{
+    AVCodecContext *c;
+    AVPacket pkt = { 0 }; // data and size must be 0;
+    AVFrame *frame;
+    int ret;
+    int got_packet;
+    int dst_nb_samples;
+
+    av_init_packet(&pkt);
+    c = ost->enc;
+
+    frame = get_audio_frame(ost);
+
+    if (frame) {
+        /* convert samples from native format to destination codec format, using the resampler */
+            /* compute destination number of samples */
+            dst_nb_samples = av_rescale_rnd(swr_get_delay(ost->swr_ctx, c->sample_rate) + frame->nb_samples,
+                                            c->sample_rate, c->sample_rate, AV_ROUND_UP);
+            av_assert0(dst_nb_samples == frame->nb_samples);
+
+        /* when we pass a frame to the encoder, it may keep a reference to it
+         * internally;
+         * make sure we do not overwrite it here
+         */
+        ret = av_frame_make_writable(ost->frame);
+        if (ret < 0)
+            exit(1);
+
+        /* convert to destination format */
+        ret = swr_convert(ost->swr_ctx,
+                          ost->frame->data, dst_nb_samples,
+                          (const uint8_t **)frame->data, frame->nb_samples);
+        if (ret < 0) {
+            fprintf(stderr, "Error while converting\n");
+            exit(1);
+        }
+        frame = ost->frame;
+
+        frame->pts = av_rescale_q(ost->samples_count, (AVRational){1, c->sample_rate}, c->time_base);
+        ost->samples_count += dst_nb_samples;
+    }
+
+    ret = avcodec_encode_audio2(c, &pkt, frame, &got_packet);
+    if (ret < 0) {
+        fprintf(stderr, "Error encoding audio frame: %s\n", av_err2str(ret));
+        exit(1);
+    }
+
+    if (got_packet) {
+        ret = av_write_frame(oc,&pkt);
+        if (ret < 0) {
+            fprintf(stderr, "Error while writing audio frame: %s\n",
+                    av_err2str(ret));
+            exit(1);
+        }
+    }
+
+    return (frame || got_packet) ? 0 : 1;
+}
+
+
+int OpenOutputFile(FileContext *out,const char*fileName,OutputStream *audioStream)
 {
     int ret = 0;
     AVOutputFormat *outFormat = NULL;
-    OutputStream audioStream = { 0 };
+    /*OutputStream audioStream = { 0 };*/
     out->formatContext = NULL;
     AVDictionary *opt = NULL;
     memset(out->fileName,0,sizeof(out->fileName));
@@ -283,8 +371,8 @@ int OpenOutputFile(FileContext *out,const char*fileName)
         printf("audio_codec failed\n");
         exit(1);
     }
-    add_stream(&audioStream,out->formatContext,&out->codec,outFormat->audio_codec);
-    open_audio(out->formatContext,out->codec,&audioStream,opt);
+    add_stream(audioStream,out->formatContext,&out->codec,outFormat->audio_codec);
+    open_audio(out->formatContext,out->codec,audioStream,opt);
 
     av_dump_format(out->formatContext, 0, out->fileName, 1);
 
@@ -308,19 +396,53 @@ int OpenOutputFile(FileContext *out,const char*fileName)
     return 0;
 }
 
+void close_stream(AVFormatContext *oc, OutputStream *ost)
+{
+    avcodec_free_context(&ost->enc);
+    av_frame_free(&ost->frame);
+    av_frame_free(&ost->tmp_frame);
+    sws_freeContext(ost->sws_ctx);
+    swr_free(&ost->swr_ctx);
+}
+
+void write_file(FileContext*out,OutputStream *audioStream)
+{
+    int num = 0;
+    while(1)
+    {
+    
+       write_audio_frame(out->formatContext, audioStream);        
+       num++;
+       if (num > 1000)
+       {
+            printf("write_file over\n");
+            break;
+       }
+    }
+}
 
 int main(void)
 {
     FileContext in;
     FileContext out;
-
+    OutputStream audioStream = {0};
     const char* open_url = "hw:0,0";
-    const char* out_file = "one.aac";
+    /*const char* out_file = "one.aac";*/
+    const char* out_file = "one.mp3";
     av_register_all();
     avdevice_register_all();
 
     OpenInputFile(&in,open_url);
-    OpenOutputFile(&out,out_file);
+    OpenOutputFile(&out,out_file,&audioStream);
+    write_file(&out,&audioStream);
+
+    av_write_trailer(out.formatContext);
+    close_stream(out.formatContext, &audioStream);
+    if (!(out.formatContext->oformat->flags & AVFMT_NOFILE))
+    {
+        avio_closep(&out.formatContext->pb);
+    }
+    avformat_free_context(out.formatContext);
 
     return 0;
 }
