@@ -116,7 +116,7 @@ AVFrame *AllocAudioFrame(enum AVSampleFormat sample_fmt,
 }
 
 
-void OpenOutputFile(FileContext  *out)
+void OpenOutputFile(FileContext  *in,FileContext  *out)
 {
     int ret = 0;
     int i;
@@ -129,6 +129,7 @@ void OpenOutputFile(FileContext  *out)
     if (ret < 0)
     {
         printf("avformat_alloc_output_context2 failed\n");
+        exit(1);
     }
     printf("avformat_alloc_output_context2 successful\n");
 
@@ -237,9 +238,9 @@ void OpenOutputFile(FileContext  *out)
     }
 
 
-    av_opt_set_int       (out->swr_ctx, "in_channel_count",   out->codecContext->channels,       0);
-    av_opt_set_int       (out->swr_ctx, "in_sample_rate",     out->codecContext->sample_rate,    0);
-    av_opt_set_sample_fmt(out->swr_ctx, "in_sample_fmt",      AV_SAMPLE_FMT_S16, 0);
+    av_opt_set_int       (out->swr_ctx, "in_channel_count",   in->codecContext->channels,       0);
+    av_opt_set_int       (out->swr_ctx, "in_sample_rate",     in->codecContext->sample_rate,    0);
+    av_opt_set_sample_fmt(out->swr_ctx, "in_sample_fmt",      in->codecContext->sample_fmt, 0);
     av_opt_set_int       (out->swr_ctx, "out_channel_count",  out->codecContext->channels,       0);
     av_opt_set_int       (out->swr_ctx, "out_sample_rate",    out->codecContext->sample_rate,    0);
     av_opt_set_sample_fmt(out->swr_ctx, "out_sample_fmt",     out->codecContext->sample_fmt,     0);
@@ -323,7 +324,7 @@ int main(void)
     FileContext *out;
 
     const char* open_url = ":0";
-    const char* out_file = "hellomm.mp3";
+    const char* out_file = "hellomm.aac";
     in = malloc(sizeof(struct FileContext));
     memset(in,0,sizeof(struct FileContext));
 
@@ -337,7 +338,7 @@ int main(void)
     avdevice_register_all();
 
     OpenInputFile(in);
-    OpenOutputFile(out);
+    OpenOutputFile(in,out);
 
     int ret = 0;
     AVDictionary        *opt        = NULL;
@@ -375,14 +376,21 @@ int main(void)
     AVFrame *outFrame = alloc_audio_frame(des_sample_fmt,des_channel_layout,
             des_sample_rate,nb_sample_size);
 
-    AVFrame *newFrame1 = alloc_audio_frame(des_sample_fmt,des_channel_layout,
-                                          des_sample_rate,0);
-    AVFrame *newFrame2 = alloc_audio_frame(des_sample_fmt,des_channel_layout,
-                                          des_sample_rate,0);
+    AVFrame *newFrame1 = alloc_audio_frame(out->codecContext->sample_fmt,out->codecContext->channel_layout,
+                                          out->codecContext->sample_rate,0);
+    AVFrame *newFrame2 = alloc_audio_frame(out->codecContext->sample_fmt,out->codecContext->channel_layout,
+                                          out->codecContext->sample_rate,0);
 
-
+    printf("output channels %d\n",out->codecContext->channels);
     AVAudioFifo *fifo = av_audio_fifo_alloc(des_sample_fmt,des_channel_count,10240);
 
+    const char *test_file = "test.pcm";
+    FILE *fp = fopen(test_file,"wb+");
+    if(!fp)
+    {
+        printf("open %s failed\n",out_file);
+        exit(1);
+    }
     int formatCount = 1000;
     int64_t nextpts  = 0;
     while (formatCount--)
@@ -435,6 +443,12 @@ int main(void)
             else
             {
                 printf("采集到音频 ");
+                if(pkt.stream_index == in->audioIndex)
+                {
+                    //保存pcm数据 ==> 验证
+                    fwrite(frame->data[0],1,frame->linesize[0],fp);
+
+                }
                 swr_convert_frame(out->swr_ctx,newFrame1,frame);
                 av_audio_fifo_write(fifo,(void**)newFrame1->data,newFrame1->nb_samples);
                 int64_t dealy = swr_get_delay(out->swr_ctx,des_sample_rate);
@@ -462,6 +476,7 @@ int main(void)
                 {
                     outFrame->pts = nextpts;
                 }
+                //下一帧的pts ?
                 nextpts = outFrame->pts + 1000000LL * out->codecContext->time_base.num/out->codecContext->time_base.den;
 
                 {
@@ -486,7 +501,9 @@ int main(void)
         }
         av_packet_unref(&pkt);
     }
-
+    printf("\n");
+    fflush(stdout);
+    fclose(fp);
     av_write_trailer(out->formatContext);
     av_frame_free(&frame);
     av_frame_free(&outFrame);
