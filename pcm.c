@@ -317,186 +317,71 @@ int OpenInputFile(FileContext *in)
 }
 
 
-int main(void)
-{
+int main(void) {
     FileContext *in;
     FileContext *out;
 
-    const char* open_url = ":0";
-    const char* out_file = "hellomm.mp3";
-    in = malloc(sizeof(struct FileContext));
-    memset(in,0,sizeof(struct FileContext));
+    const char *open_url = ":0";
+    const char *out_file = "hello.pcm";
+    in = (FileContext*)malloc(sizeof(struct FileContext));
+    memset(in, 0, sizeof(struct FileContext));
 
-    out = malloc(sizeof(struct FileContext));
-    memset(out,0,sizeof(struct FileContext));
+    out =(FileContext*) malloc(sizeof(struct FileContext));
+    memset(out, 0, sizeof(struct FileContext));
 
-    strncpy(in->fileName,open_url,strlen(open_url));
-    strncpy(out->fileName,out_file,strlen(out_file));
+    strncpy(in->fileName, open_url, strlen(open_url));
+    strncpy(out->fileName, out_file, strlen(out_file));
 
     av_register_all();
     avdevice_register_all();
 
     OpenInputFile(in);
-    OpenOutputFile(out);
-
-    int ret = 0;
-    AVDictionary        *opt        = NULL;
-
-    if(!(out->formatContext->oformat->flags & AVFMT_NOFILE))
+    //OpenOutputFile(out);
+    FILE *p = NULL;
+    p = fopen(out_file,"wb+");
+    if(!p)
     {
-        ret = avio_open(&out->formatContext->pb,out->fileName,AVIO_FLAG_WRITE);
-        if(ret < 0)
-        {
-            printf("avio_open failed\n");
-            exit(1);
-        }
-    }
-    opt = NULL;
-    ret = avformat_write_header(out->formatContext,&opt);
-    av_dict_free(&opt);
-    if(ret < 0)
-    {
-        printf("avformat_write_header failed\n");
+        printf("open %s failed\n",out_file);
         exit(1);
     }
-
-    int des_channel_layout              = out->codecContext->channel_layout;
-    int des_channel_count               = out->codecContext->channels;
-    int des_sample_rate                 = out->codecContext->sample_rate;
-    enum AVSampleFormat des_sample_fmt  = out->codecContext->sample_fmt;
-
-    int nb_sample_size = out->codecContext->frame_size;
-
     AVFrame *frame = alloc_audio_frame(in->formatContext->streams[in->audioIndex]->codecpar->format,
-            in->formatContext->streams[in->audioIndex]->codecpar->channel_layout,
+                                       in->formatContext->streams[in->audioIndex]->codecpar->channel_layout,
                                        in->formatContext->streams[in->audioIndex]->codecpar->sample_rate,
                                        in->formatContext->streams[in->audioIndex]->codecpar->frame_size);
 
-    AVFrame *outFrame = alloc_audio_frame(des_sample_fmt,des_channel_layout,
-            des_sample_rate,nb_sample_size);
-
-    AVFrame *newFrame1 = alloc_audio_frame(des_sample_fmt,des_channel_layout,
-                                          des_sample_rate,0);
-    AVFrame *newFrame2 = alloc_audio_frame(des_sample_fmt,des_channel_layout,
-                                          des_sample_rate,0);
 
 
-    AVAudioFifo *fifo = av_audio_fifo_alloc(des_sample_fmt,des_channel_count,10240);
 
-    int formatCount = 1000;
-    int64_t nextpts  = 0;
-    while (formatCount--)
+
+    AVPacket pkt;
+    int64_t  frameCount = 1000;
+    while(frameCount--)
     {
-        int size = av_audio_fifo_size(fifo);
-        if (size >= nb_sample_size)
+        int ret = av_read_frame(in->formatContext,&pkt);
+        if(ret < 0)
         {
-            size = nb_sample_size;
-            av_audio_fifo_read(fifo,(void**)outFrame->data,size);
-            if(nextpts == 0)
-            {
-                outFrame->pts = av_gettime();
-            }
-            else
-            {
-                outFrame->pts = nextpts;
-            }
-            nextpts = outFrame->pts + 1000000LL * out->codecContext->time_base.num/out->codecContext->time_base.den;
-
-            {
-               AVRational base;
-               base.num = 1;
-               base.den = 1000000LL;
-               outFrame->pts = av_rescale_q(outFrame->pts,base,out->codecContext->time_base);
-
-            }
-
-            avcodec_send_frame(out->codecContext,outFrame);
-            AVPacket pkt = {0};
-            av_init_packet(&pkt);
-            ret = avcodec_receive_packet(out->codecContext,&pkt);
-            if(ret == 0)
-            {
-                write_frame(out->formatContext,&out->codecContext->time_base,out->stream,&pkt);
-            }
-            av_packet_unref(&pkt);
-            continue;
+            printf("av_read_frame failed\n");
+            exit(1);
         }
 
-        AVPacket pkt = {0};
-        av_init_packet(&pkt);
-        if(av_read_frame(in->formatContext,&pkt) >= 0)
+        if(pkt.stream_index == in->audioIndex)
         {
             avcodec_send_packet(in->codecContext,&pkt);
             if(avcodec_receive_frame(in->codecContext,frame) < 0)
             {
                 printf("avcodec_receive_frame failed\n");
                 fflush(stdout);
+                continue;
             }
-            else
-            {
-                printf("采集到音频 ");
-                swr_convert_frame(out->swr_ctx,newFrame1,frame);
-                av_audio_fifo_write(fifo,(void**)newFrame1->data,newFrame1->nb_samples);
-                int64_t dealy = swr_get_delay(out->swr_ctx,des_sample_rate);
-                if(dealy > 0)
-                {
-                    swr_convert_frame(out->swr_ctx,newFrame2,NULL);
-                    av_audio_fifo_write(fifo,(void**)newFrame2->data,newFrame2->nb_samples);
-                }
+            fwrite(frame->data[0],1,frame->linesize[0],p);
 
-                int size = av_audio_fifo_size(fifo);
-                if (size < nb_sample_size)
-                {
-                    av_packet_unref(&pkt);
-                    continue;
-                }
-
-
-                size = nb_sample_size;
-                av_audio_fifo_read(fifo,(void**)outFrame->data,size);
-                if(nextpts == 0)
-                {
-                    outFrame->pts = av_gettime();
-                }
-                else
-                {
-                    outFrame->pts = nextpts;
-                }
-                nextpts = outFrame->pts + 1000000LL * out->codecContext->time_base.num/out->codecContext->time_base.den;
-
-                {
-                    AVRational base;
-                    base.num = 1;
-                    base.den = 1000000LL;
-                    outFrame->pts = av_rescale_q(outFrame->pts,base,out->codecContext->time_base);
-
-                }
-
-                avcodec_send_frame(out->codecContext,outFrame);
-                AVPacket pkt = {0};
-                av_init_packet(&pkt);
-                ret = avcodec_receive_packet(out->codecContext,&pkt);
-                if(ret == 0)
-                {
-                    write_frame(out->formatContext,&out->codecContext->time_base,out->stream,&pkt);
-                }
-                av_packet_unref(&pkt);
-
-            }
         }
         av_packet_unref(&pkt);
     }
 
-    av_write_trailer(out->formatContext);
-    av_frame_free(&frame);
-    av_frame_free(&outFrame);
-    av_frame_free(&newFrame1);
-    av_frame_free(&newFrame2);
-    av_audio_fifo_free(fifo);
-    avformat_close_input(&out->formatContext);
-    avformat_close_input(&in->formatContext);
-    avcodec_free_context(&out->codecContext);
-   // avcodec_free_context(&in->codecContext);
+    fclose(p);
 
-    return 0;
+    // free ?
 }
+
+
