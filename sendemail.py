@@ -1,12 +1,84 @@
-from smtplib import SMTP_SSL
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
+import urllib
+import socket
+import time
+import smtplib
 from email.mime.text import MIMEText
-
-with SMTP_SSL(host="smtp.qq.com") as smtp :
-    smtp.login(user='654613310@qq.com',password='654613310long?')
-    
-    msg = MIMEText("这是来自Python3的一封测试邮件",_charset="utf8")
-    msg["Subject"] = "测试邮件"
-    msg["from"] = '654613310@qq.com'
-    msg["to"] = '654613310@qq.com'
-    
-    smtp.sendmail(from_addr="654613310@qq.com",to_addrs="654613310@qq.com", msg=msg.as_string())
+#############
+#To address
+mailto_list=["xx@gmail.com","xx@126.com","xx@hotmail.com"]
+#####################
+#Set server, account, password and email postfix
+'''
+# no tls
+mail_host="smtp.126.com"
+mail_user="xx" #用户名
+mail_pass="xx" #密码
+mail_postfix="126.com"
+'''
+#tls
+mail_host="smtp-mail.outlook.com:587"
+mail_user="xx@hotmail.com"
+mail_pass="xx"
+mail_postfix="hotmail.com"
+'''
+#tls
+mail_host="smtp.gmail.com:587"
+mail_user="xx@gmail.com"
+mail_pass="xx"
+mail_postfix="gmail.com"
+'''
+######################
+def send_mail(to_list,sub,content):
+    '''
+    to_list: to address
+    sub:subject
+    content:content
+    send_mail("aaa@126.com","sub","content")
+    '''
+    me=mail_user+"<"+mail_user+"@"+mail_postfix+">"
+    msg = MIMEText(content)
+    msg['Subject'] = sub
+    msg['From'] = me
+    msg['To'] = ";".join(to_list)
+    try:
+        s = smtplib.SMTP()
+        s.connect(mail_host)
+        s.starttls() # TLS need this
+        s.login(mail_user,mail_pass)
+        s.sendmail(me, to_list, msg.as_string())
+        s.close()
+        return True
+    except Exception, e:
+        print str(e)
+        return False
+current_ip = None
+def getip():
+    sock = socket.create_connection(('ns1.dnspod.net', 6666))
+    ip = sock.recv(16)
+    sock.close()
+    return ip
+'''
+def getip():
+    f = urllib.urlopen("http://www.canyouseeme.org/")
+    html_doc = f.read()
+    f.close()
+    m = re.search('(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)',html_doc)
+    print m.group(0)
+    data=m.group()
+    return data
+'''
+if __name__ == '__main__':
+    while True:
+        try:
+            ip = getip()
+            print ip
+            # if current_ip != ip:
+                # if send_mail(mailto_list,"Raspberry Pi external ip address", 'Raspberry Pi External IP Addreds is ' + ip + ' ...!'):
+                    # current_ip = ip
+                    #print('Send OK')
+        except Exception, e:
+            print e
+            pass
+        time.sleep(60) # Check the ip address every one minute
