@@ -52,12 +52,58 @@ def numtozh(num):
         num = '零下%s十%s' % (num_dict[s_num], num_dict.get(g_num, ''))
     return num
 
+def show_weather(day,wea,strong,today):
+    space = "\t"
+    day = day.strip()
+    wea = wea.strip()
+    strong = strong.strip()
+    str = ""
+    if today == day:
+        str = day + space + wea + space + "温度: " + strong + space + "今日"
+    else:
+        str = day + space + wea + space + "温度: " + strong
+    print('*'*60)
+    print(str)
+
+def day_weather(soup):
+    #print(soup)
+    weather = []
+    day_info = soup.find('em').getText()
+    #print(day_info)
+
+    wea_info = soup.find('img')#x.tag['alt']
+    wea_info = wea_info.attrs['alt']
+    #print(wea_info)
+
+    wea_list = soup.find_all('p')
+    for wea in wea_list:
+        num = wea.getText()
+        weather.append(num)
+    weather = (' ').join(weather)
+    #print(weather)
+    today = datetime.now().date().strftime('%d')
+    show_weather(day_info,wea_info,weather,today)
+
+def month_weather(soup):
+    
+    month = soup.find('div', attrs={'class': 'grid clearfix'})
+    month_list = month.find_all('li',attrs={'class': 'item'})
+
+    #print(len(month_list));
+
+    for day in month_list:
+        if day.find('em') == None:
+            continue
+        day_weather(day)
+    
 
 def get_weather():
     # 下载墨迹天气主页源码
     res = requests.get('http://tianqi.moji.com/', headers=headers)
     # 用BeautifulSoup获取所需信息
     soup = BeautifulSoup(res.text, "html.parser")
+    month_weather(soup)
+    return
     temp = soup.find('div', attrs={'class': 'wea_weather clearfix'}).em.getText()
     temp = numtozh(int(temp))
     weather = soup.find('div', attrs={'class': 'wea_weather clearfix'}).b.getText()
@@ -66,6 +112,7 @@ def get_weather():
     sd_num_zh = numtozh(int(sd_num))
     sd = sd.replace(sd_num, sd_num_zh)
     wind = soup.find('div', attrs={'class': 'wea_about clearfix'}).em.getText()
+    qiche = soup.find('div', attrs={'class': 'wea_about clearfix'}).b.getText()
     aqi = soup.find('div', attrs={'class': 'wea_alert clearfix'}).em.getText()
     aqi_num = re.search(r'\d+', aqi).group()
     aqi_num_zh = numtozh(int(aqi_num))
@@ -74,11 +121,15 @@ def get_weather():
     sd = sd.replace(' ', '百分之').replace('%', '')
     aqi = '空气污染指数' + aqi
     info = info.replace('，', ',')
+
+    local_info = soup.find('div', attrs={'class': 'search_default'}).em.getText()
+    local_info = local_info.split('，')[0]
+    print(local_info)
     # 获取今天的日期
     today = datetime.now().date().strftime('%Y年%m月%d日')
     # 将获取的信息拼接成一句话
-    text = '早上好！今天是%s,天气,%s,温度%s摄氏度,%s,%s,%s,%s' % \
-           (today, weather, temp, sd, wind, aqi, info)
+    text = '早上好！今天是%s,%s今日%s,天气,%s,温度%s摄氏度,%s,%s,%s,%s' % \
+           (today,local_info,qiche, weather, temp, sd, wind, aqi, info)
     return text
 
 
@@ -91,9 +142,10 @@ def text2voice(text):
 
 def main():
     # 获取需要转换语音的文字
-    text = get_weather()
-    print(text)
-    text2voice(text)
+    get_weather()
+    #text = get_weather()
+    # print(text)
+    # text2voice(text)
 
 if __name__ == '__main__':
     main()
