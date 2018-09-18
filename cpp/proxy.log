@@ -1,0 +1,119 @@
+3: "GET http://fanyi.youdao.com/openapi.do?keyfrom=youdaocidian&key=1116151381&type=data&doctype=json&version=1.1&q=sfsf HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:31 2018
+3: not in cache
+3: Requesting "GET http://fanyi.youdao.com/openapi.do?keyfrom=youdaocidian&key=1116151381&type=data&doctype=json&version=1.1&q=sfsf HTTP/1.1" from fanyi.youdao.com
+3: Received "HTTP/1.1 302 Found" from fanyi.youdao.com
+3: Responding "HTTP/1.1 302 Found"
+4: "GET http://fanyi.youdao.com/openapi?path=frequent-error HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:31 2018
+4: not in cache
+4: Requesting "GET http://fanyi.youdao.com/openapi?path=frequent-error HTTP/1.1" from fanyi.youdao.com
+4: Received "HTTP/1.1 200 OK" from fanyi.youdao.com
+4: Responding "HTTP/1.1 200 OK"
+5: "GET http://www.ituring.com.cn/article/127817 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:45 2018
+5: not in cache
+5: Requesting "GET http://www.ituring.com.cn/article/127817 HTTP/1.1" from www.ituring.com.cn
+5: Received "HTTP/1.1 200 OK" from www.ituring.com.cn
+5: Responding "HTTP/1.1 200 OK"
+6: "GET http://www.ituring.com.cn/kendo/css?v=W-IyudFsjvr8DmczNaEtVDAWVVWkoAYhOkQl_7kkbqc1 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:46 2018
+6: not in cache
+6: Requesting "GET http://www.ituring.com.cn/kendo/css?v=W-IyudFsjvr8DmczNaEtVDAWVVWkoAYhOkQl_7kkbqc1 HTTP/1.1" from www.ituring.com.cn
+6: Received "HTTP/1.1 200 OK" from www.ituring.com.cn
+6: cached, expires at Mon Jun  4 09:03:32 2068
+6: Responding "HTTP/1.1 200 OK"
+7: "GET http://www.ituring.com.cn/ituring/css?v=sZ469sB_bTSptWvx3QdRX8e0asdOguk7ejwJWbvyndU1 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:46 2018
+7: not in cache
+7: Requesting "GET http://www.ituring.com.cn/ituring/css?v=sZ469sB_bTSptWvx3QdRX8e0asdOguk7ejwJWbvyndU1 HTTP/1.1" from www.ituring.com.cn
+7: Received "HTTP/1.1 200 OK" from www.ituring.com.cn
+7: cached, expires at Mon Jun  4 09:03:33 2068
+7: Responding "HTTP/1.1 200 OK"
+8: "GET http://www.ituring.com.cn/ituring/js?v=20qhuba-JjWpkUZ6WyvMzCPWFrB_TrAdbOFot0ehZMw1 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:47 2018
+8: not in cache
+8: Requesting "GET http://www.ituring.com.cn/ituring/js?v=20qhuba-JjWpkUZ6WyvMzCPWFrB_TrAdbOFot0ehZMw1 HTTP/1.1" from www.ituring.com.cn
+8: Received "HTTP/1.1 200 OK" from www.ituring.com.cn
+8: cached, expires at Mon Jun  4 09:03:34 2068
+8: Responding "HTTP/1.1 200 OK"
+9: "GET http://www.ituring.com.cn/bundles/kendo?v=Ep7XxB9YaQz_sUggoppp1nXkei68VOq0u3sLcOISbsE1 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:47 2018
+9: not in cache
+9: Requesting "GET http://www.ituring.com.cn/bundles/kendo?v=Ep7XxB9YaQz_sUggoppp1nXkei68VOq0u3sLcOISbsE1 HTTP/1.1" from www.ituring.com.cn
+9: Received "HTTP/1.1 200 OK" from www.ituring.com.cn
+9: cached, expires at Mon Jun  4 09:03:34 2068
+9: Responding "HTTP/1.1 200 OK"
+10: "GET http://file.ituring.com.cn/LargeAvatar/0043bbe813e6938d7bec HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:47 2018
+10: not in cache
+10: Requesting "GET http://file.ituring.com.cn/LargeAvatar/0043bbe813e6938d7bec HTTP/1.1" from file.ituring.com.cn
+10: Received "HTTP/1.1 200 OK" from file.ituring.com.cn
+10: cached, expires at Wed Sep 18 08:31:47 2019
+10: Responding "HTTP/1.1 200 OK"
+11: "GET http://www.ituring.com.cn/staticitr/lib/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2?v=4.7.0 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:48 2018
+11: not in cache
+11: Requesting "GET http://www.ituring.com.cn/staticitr/lib/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2?v=4.7.0 HTTP/1.1" from www.ituring.com.cn
+11: Received "HTTP/1.1 200 OK" from www.ituring.com.cn
+11: cached, but requires re-validation
+11: Responding "HTTP/1.1 200 OK"
+12: "GET http://www.ituring.com.cn/staticitr/css/data:image/gif;base64,R0lGODlhEAAQAIAAAAAAAP/yH5BAEHAAAALAAAAAAQABAAAAIThI+py+0PIwwhUjqvrbL7D4ZHAQA7 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:48 2018
+12: not in cache
+12: Requesting "GET http://www.ituring.com.cn/staticitr/css/data:image/gif;base64,R0lGODlhEAAQAIAAAAAAAP/yH5BAEHAAAALAAAAAAQABAAAAIThI+py+0PIwwhUjqvrbL7D4ZHAQA7 HTTP/1.1" from www.ituring.com.cn
+12: Received "HTTP/1.1 404 Not Found" from www.ituring.com.cn
+12: Responding "HTTP/1.1 404 Not Found"
+13: "GET http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion=427015 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:48 2018
+13: not in cache
+13: Requesting "GET http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion=427015 HTTP/1.1" from bdimg.share.baidu.com
+13: Received "HTTP/1.1 200 OK" from bdimg.share.baidu.com
+13: cached, expires at Tue Sep 18 08:57:31 2018
+13: Responding "HTTP/1.1 200 OK"
+14: "GET http://account.ituring.com.cn/iframe-log-in?returnUrl=http://www.ituring.com.cn/article/127817&hash=gotocomment HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:48 2018
+14: not in cache
+14: Requesting "GET http://account.ituring.com.cn/iframe-log-in?returnUrl=http://www.ituring.com.cn/article/127817&hash=gotocomment HTTP/1.1" from account.ituring.com.cn
+14: Received "HTTP/1.1 200 OK" from account.ituring.com.cn
+14: Responding "HTTP/1.1 200 OK"
+15: "GET http://www.ituring.com.cn/editablearea/show?name=Footer&_=1537259507538 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:48 2018
+15: not in cache
+15: Requesting "GET http://www.ituring.com.cn/editablearea/show?name=Footer&_=1537259507538 HTTP/1.1" from www.ituring.com.cn
+15: Received "HTTP/1.1 200 OK" from www.ituring.com.cn
+15: Responding "HTTP/1.1 200 OK"
+16: "GET http://bdimg.share.baidu.com/static/api/js/share/share_api.js?v=226108fe.js HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:48 2018
+16: Requesting "GET http://bdimg.share.baidu.com/static/api/js/share/share_api.js?v=226108fe.js HTTP/1.1" from bdimg.share.baidu.com
+16: Received "HTTP/1.1 304 Not Modified" from bdimg.share.baidu.com
+16: Responding "HTTP/1.1 304 Not Modified"
+17: "GET http://bdimg.share.baidu.com/static/api/js/view/share_view.js?v=3ae6026d.js HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:48 2018
+17: Requesting "GET http://bdimg.share.baidu.com/static/api/js/view/share_view.js?v=3ae6026d.js HTTP/1.1" from bdimg.share.baidu.com
+17: Received "HTTP/1.1 304 Not Modified" from bdimg.share.baidu.com
+17: Responding "HTTP/1.1 304 Not Modified"
+18: "GET http://account.ituring.com.cn/Content/bootstrap.min.css HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:48 2018
+18: not in cache
+18: Requesting "GET http://account.ituring.com.cn/Content/bootstrap.min.css HTTP/1.1" from account.ituring.com.cn
+18: Received "HTTP/1.1 200 OK" from account.ituring.com.cn
+18: cached, but requires re-validation
+18: Responding "HTTP/1.1 200 OK"
+19: "GET http://account.ituring.com.cn/Scripts/jquery-2.1.3.min.js HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:48 2018
+19: not in cache
+19: Requesting "GET http://account.ituring.com.cn/Scripts/jquery-2.1.3.min.js HTTP/1.1" from account.ituring.com.cn
+19: Received "HTTP/1.1 200 OK" from account.ituring.com.cn
+19: cached, but requires re-validation
+19: Responding "HTTP/1.1 200 OK"
+20: "GET http://bdimg.share.baidu.com/static/api/js/base/tangram.js?v=37768233.js HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:49 2018
+20: Requesting "GET http://bdimg.share.baidu.com/static/api/js/base/tangram.js?v=37768233.js HTTP/1.1" from bdimg.share.baidu.com
+20: Received "HTTP/1.1 304 Not Modified" from bdimg.share.baidu.com
+20: Responding "HTTP/1.1 304 Not Modified"
+21: "GET http://account.ituring.com.cn/staticitr/itr.min.css HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:49 2018
+21: not in cache
+21: Requesting "GET http://account.ituring.com.cn/staticitr/itr.min.css HTTP/1.1" from account.ituring.com.cn
+21: Received "HTTP/1.1 404 Not Found" from account.ituring.com.cn
+21: Responding "HTTP/1.1 404 Not Found"
+22: "GET http://nsclick.baidu.com/v.gif?pid=307&type=3071&sign=&desturl=&linkid=jm7gmeig71o&apitype=1 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:51 2018
+22: not in cache
+22: Requesting "GET http://nsclick.baidu.com/v.gif?pid=307&type=3071&sign=&desturl=&linkid=jm7gmeig71o&apitype=1 HTTP/1.1" from nsclick.baidu.com
+22: Received "HTTP/1.1 200 OK" from nsclick.baidu.com
+22: cached, but requires re-validation
+22: Responding "HTTP/1.1 200 OK"
+23: "GET http://api.share.baidu.com/v.gif?l=http%3A%2F%2Fwww.ituring.com.cn%2Farticle%2F127817 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:31:51 2018
+23: not in cache
+23: Requesting "GET http://api.share.baidu.com/v.gif?l=http%3A%2F%2Fwww.ituring.com.cn%2Farticle%2F127817 HTTP/1.1" from api.share.baidu.com
+23: Received "HTTP/1.1 200 OK" from api.share.baidu.com
+23: not cacheable because header indicates no-store
+23: Responding "HTTP/1.1 200 OK"
+24: "GET http://nsclick.baidu.com/v.gif?pid=307&type=3075&l=267856&t=0&s=267856&v=1310&f=5000&r=&u=http%3A%2F%2Fwww.ituring.com.cn%2Farticle%2F127817 HTTP/1.1" from 127.0.0.1 @ Tue Sep 18 08:36:19 2018
+24: not in cache
+24: Requesting "GET http://nsclick.baidu.com/v.gif?pid=307&type=3075&l=267856&t=0&s=267856&v=1310&f=5000&r=&u=http%3A%2F%2Fwww.ituring.com.cn%2Farticle%2F127817 HTTP/1.1" from nsclick.baidu.com
+24: Received "HTTP/1.1 200 OK" from nsclick.baidu.com
+24: cached, but requires re-validation
+24: Responding "HTTP/1.1 200 OK"
