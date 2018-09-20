@@ -74,8 +74,6 @@ def sendmail(text):
 
 def main():
     text = parse_html(seven_url)
-    # text = """<p>Python 邮件发送测试...</p>
-# <p><a href="http://www.baidu.com">这是一个链接</a></p>"""
     sendmail(text)
 
 if __name__ == "__main__":
